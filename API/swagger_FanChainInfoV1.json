@@ -1,0 +1,258 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1.0.1",
+    "title": "FanChain Information API",
+    "description": "We do our best to have all our URLs be [RESTful](http://en.wikipedia.org/wiki/Representational_state_transfer).\nEvery endpoint (URL) may support one of four different http verbs. \nGET requests fetch information about an object, POST requests create objects, PUT requests update objects, and finally DELETE requests will delete objects.\n## HTTP Response Codes\nThe API responds both with HTTP status codes AND the status code in the meta key.\n\nIf you want to force the API to always return a 200 HTTP status code and  parse the meta block yourself for the true response code, include _200=1 in the query string.\n\n## Structure\n\n### The Envelope\n\nEvery response is contained by an envelope. That is, each response has a\npredictable set of keys with which you can expect to interact:\n```json\n{\n    \"meta\": {\n        \"code\": 200,\n        \"timestamp\": 1547064610,\n    },\n    \"data\": {\n        ...\n    },\n    \"pagination\": {\n        \"nextUrl\": \"...\",\n        \"currentPage\": int,\n        \"totalPages\": int\n    }\n}\n```\n\n#### META\n\nThe meta key is used to communicate extra information about the response to the developer. If all goes well, you'll only ever see a code key with value 200.\n\nHowever, sometimes things go wrong, and in that case you might see a response like:\n\n```json\n{\n    \"meta\": {\n        \"timestamp\": 1547064610,\n        \"errorType\": \"systemKeyFailure\",\n        \"code\": 400,\n        \"errorMessage\": \"...\"\n    }\n}\n```\n\n#### DATA\nThe data key is the meat of the response. It may be a list or dictionary, but either way this is where you'll find the data you requested.\n\n#### PAGINATION\nSome operations have response count limits.\n\nIn cases like these, there will be an additional block passed OUTSIDE the *data* container that will have the next url **stub* , currentPage , and totalPages\n\n```json\n{\n    ...\n    \"pagination\": {\n        \"nextUrl\": \"/me/following/2\",\n        \"currentPage\": 1,\n        \"totalPages\": 3\n        \"totalItemss\": 30\n    }\n}\n```\n"
+  },
+  "host": "api.fanchain.com",
+  "basePath": "/info/v1",
+  "schemes": [
+    "https"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "Stamp",
+      "description": "Information about stamps.\n"
+    }
+  ],
+  "parameters": {
+    "stamp": {
+      "name": "stamp",
+      "in": "path",
+      "description": "The numeric representation of the stamp",
+      "type": "number",
+      "required": true
+    }
+  },
+  "paths": {
+    "/stamp": {
+      "get": {
+        "tags": [
+          "Stamp"
+        ],
+        "operationId": "getStampInfo",
+        "description": "Get basic information about the stamp database.  The primary interest point is the lastUpdated timestamp.  This timestamp will tell you if you need to update your local database.\nIt is recommended that you check this endpoint at least once a day, and account for seeing stamps that you do not recognize and either update the entire database or use the Stamp.getStamp to update the single stamp you do not have cached information for. \n",
+        "responses": {
+          "200": {
+            "description": "Basic Information on All Stamps",
+            "schema": {
+              "$ref": "#/definitions/Stamp_getStampInfo"
+            }
+          }
+        }
+      }
+    },
+    "/stamp/all": {
+      "get": {
+        "tags": [
+          "Stamp"
+        ],
+        "operationId": "getAllStamps",
+        "description": "Get a full dump of all existing stamps and their information.  Used to update localally cached database",
+        "responses": {
+          "200": {
+            "description": "Basic Information on All Stamps",
+            "schema": {
+              "$ref": "#/definitions/Stamp_getAllStamps"
+            }
+          }
+        }
+      }
+    },
+    "/stamp/{stamp}": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/stamp"
+          }
+        ],
+        "tags": [
+          "Stamp"
+        ],
+        "operationId": "getStamp",
+        "description": "Retrieve the information for a single stamp based on the requested stamp number",
+        "responses": {
+          "200": {
+            "description": "Information about the requested stamp",
+            "schema": {
+              "$ref": "#/definitions/Stamp_getStamp"
+            }
+          },
+          "404": {
+            "description": "Stamp not found",
+            "schema": {
+              "properties": {
+                "meta": {
+                  "$ref": "#/definitions/GeneralError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GeneralSuccess": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "example": 200
+        },
+        "timestamp": {
+          "type": "integer",
+          "example": 1547064610,
+          "description": "Current system time at time of response"
+        }
+      }
+    },
+    "GeneralError": {
+      "type": "object",
+      "properties": {
+        "meta": {
+          "properties": {
+            "timestamp": {
+              "type": "integer",
+              "example": 1547064610,
+              "description": "Current system time at time of response"
+            },
+            "errorType": {
+              "type": "string",
+              "example": "stampNotFound",
+              "description": "Machine format error message"
+            },
+            "code": {
+              "type": "integer",
+              "example": 404
+            },
+            "errorMessage": {
+              "type": "string",
+              "description": "Human readable error message (english)",
+              "example": "Stamp Not Found"
+            }
+          }
+        }
+      }
+    },
+    "Stamp_getStampInfo": {
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/GeneralSuccess"
+        },
+        "data": {
+          "properties": {
+            "lastUpdate": {
+              "type": "integer",
+              "example": 1547064610,
+              "description": "Time database was last updated"
+            },
+            "stampCount": {
+              "type": "integer",
+              "description": "The current number of total stamps",
+              "example": 456
+            }
+          }
+        }
+      }
+    },
+    "Stamp_getAllStamps": {
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/GeneralSuccess"
+        },
+        "data": {
+          "properties": {
+            "lastUpdate": {
+              "type": "integer",
+              "example": 1547064610,
+              "description": "Time database was last updated"
+            },
+            "stampDatabase": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/stampData"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Stamp_getStamp": {
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/GeneralSuccess"
+        },
+        "data": {
+          "$ref": "#/definitions/stampData"
+        }
+      }
+    },
+    "stampData": {
+      "properties": {
+        "stamp": {
+          "type": "integer",
+          "description": "The full numeric stamp code",
+          "example": 2011001
+        },
+        "category": {
+          "type": "integer",
+          "description": "The league or sport super category",
+          "example": 2
+        },
+        "division": {
+          "type": "integer",
+          "description": "The division/conference/subgroup of the super category.  In the stamp itself, it is sprintf(\"%03d\", division)",
+          "example": 11
+        },
+        "unit": {
+          "type": "string",
+          "description": "The smallest subgroup of a division, normally a team or an individual. In the stamp itself, it is sprintf(\"%03d\", unit)",
+          "example": 1
+        },
+        "abbreviation": {
+          "type": "string",
+          "description": "The FanChain official abbreviation of the stamp",
+          "example": "TOR"
+        },
+        "shortForm": {
+          "type": "string",
+          "description": "Short form of stamp to display, often the team name",
+          "example": "Raptors"
+        },
+        "longForm": {
+          "type": "string",
+          "description": "Standard longform of the stamp to display, normally Location Team",
+          "example": "Toronto Raptors"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Fully expanded name of the stamp, inclusive of the category and division names",
+          "example": "National Basketball Association  : Eastern Conference  : Atlantic Division  : Toronto Raptors"
+        },
+        "colorPrimary": {
+          "type": "string",
+          "description": "Primary HTML Hex color code",
+          "example": "#CE1141"
+        },
+        "colorSecondary": {
+          "type": "string",
+          "description": "Secondary HTML Hex color code",
+          "example": "#000000"
+        },
+        "colorTertiary": {
+          "type": "string",
+          "description": "Tertiary HTML Hex color code, often not displayed",
+          "example": "#A1A1A4"
+        }
+      }
+    }
+  }
+}
