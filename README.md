@@ -4,11 +4,13 @@ This repository contains the information files to map FANZ stamp values to their
 
 ## Getting Started
 
+### Stamp Color Usage
+
+All stamps included in the FanChain stamp database have 3 brand colors associated with them: colorPrimary, colorSecondary and colorTertiary. For most use cases, colorPrimary is the only color that is needed. Dark mode support is built in by ensuring all colorPrimary’s have been double checked that they are visible on both light and dark backgrounds.
+
 ### API
 
 This is the SWAGGER 2.0 JSON file for accessing the FanChain INFO api.  The API provides realtime updates to the database and allows for application access and caching.
-
-*This API is not available for use yet*
 
 ### JSON
 
